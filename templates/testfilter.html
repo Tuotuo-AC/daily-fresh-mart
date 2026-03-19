@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+{{ a }}
+<hr>
+<hr>
+{% load myfilter %}
+取余{{ a|mod:3 }}
+<hr>
+<hr>
+{{ a1|default:'默认' }}
+<hr>
+<hr>
+{{ list }}
+<hr>
+<hr>
+{{ list|length }}
+
+</body>
+</html>
