@@ -93,20 +93,14 @@
 ## 📁 项目结构
 
 ```
-tiantian-fresh/
-├── apps/                 # 所有Django应用
-│   ├── users/            # 用户模块
-│   ├── goods/            # 商品模块
-│   ├── cart/             # 购物车模块
-│   ├── order/            # 订单模块
-│   └── ...
-├── db/                   # 数据库相关
-├── logs/                 # 日志文件
-├── media/                # 用户上传文件
+ttsx/
+├── goods/                # 商品模块
+├── cart/                 # 购物车模块
+└── ...
 ├── static/               # 静态文件 (CSS, JS, Images)
 ├── templates/            # 项目模板文件
 ├── utils/                # 工具函数/类
-├── dailyfresh/           # 项目主配置目录
+├── ttsx/                 # 项目主配置目录
 │   ├── settings.py       # 配置文件
 │   ├── urls.py           # 主路由
 │   └── wsgi.py

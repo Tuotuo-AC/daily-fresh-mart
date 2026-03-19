@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+
+# 虚拟环境
+venv/
+env/
+ENV/
+
+# 环境变量
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# 数据库
+*.sqlite3
+
+# 静态文件收集目录
+staticfiles/
+
+# 上传文件
+media/
