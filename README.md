@@ -32,7 +32,6 @@
 *   **后端框架**: Python 3.11, Django 4.2
 *   **数据库**: MySQL 
 *   **前端**: HTML5, CSS3, JavaScript, jQuery, Ajax
-*   **异步任务**: Celery (用于发送邮件等)
 
 ## 📦 快速开始
 
