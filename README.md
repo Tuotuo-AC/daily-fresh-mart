@@ -314,3 +314,93 @@ docker restart 容器
 docker-compose logs web 查看 web 容器的日志
 ```
 
+
+
+在虚拟机重启后，Django 容器再次出现 `Connection refused` 错误，根本原因是 **Django 容器启动时 MySQL 尚未完全就绪**。虽然 `docker-compose.yml` 中设置了 `depends_on: - db`，但这只确保 MySQL **容器已启动**（即 `docker container start` 完成），并不能保证 MySQL 服务已经初始化完成并可以接受连接。MySQL 容器启动后通常需要几秒到几十秒来初始化数据、执行恢复等，这段时间内如果 Django 尝试连接，就会得到 `Connection refused`，导致 Django 退出，然后被 `restart: always` 策略反复重启。
+
+------
+
+#### 解决方案：为 Django 添加数据库等待脚本
+
+您需要修改项目，让 Django 在启动前等待 MySQL 就绪。以下是最简便的方法
+
+#### 1. 在项目根目录创建 `entrypoint.sh`
+
+```
+vi entrypoint.sh
+```
+
+内容如下：
+
+```
+#!/bin/sh
+echo "Waiting for database..."
+while ! nc -z db 3306; do
+  sleep 1
+done
+echo "Database is ready."
+python manage.py migrate --noinput   # 可选的，自动运行迁移
+exec python manage.py runserver 0.0.0.0:8000
+```
+
+保存并退出（`:wq`）。
+
+#### 2. 赋予执行权限
+
+```
+chmod +x entrypoint.sh
+```
+
+#### 3. 修改 dockerfile
+
+在 `dockerfile` 末尾添加：
+
+```
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+CMD ["./entrypoint.sh"]
+
+完整的 Dockerfile 看起来应该是这样
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+
+# 新添加的部分
+RUN apt-get update && apt-get install -y netcat-openbsd
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+
+CMD ["./entrypoint.sh"]
+```
+
+#### 4. 重新构建并启动容器
+
+```
+docker-compose down
+docker-compose up -d --build
+```
+
+#### 验证启动
+
+查看日志，确认 web 容器已等待并成功连接：
+
+```
+docker-compose logs web --tail=20
+```
+
+应该看到类似：
+
+```
+Waiting for database...
+Database is ready.
+Operations to perform...
+```
+
+然后访问 `http://192.168.88.130:8001` 检查网站是否正常。

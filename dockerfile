@@ -14,5 +14,9 @@ COPY . .
 # 暴露 Django 默认端口
 EXPOSE 8000
 
-# 启动命令（可根据需要调整）
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# 新添加的部分
+RUN apt-get update && apt-get install -y netcat-openbsd
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+
+CMD ["./entrypoint.sh"]
