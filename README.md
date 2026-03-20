@@ -85,6 +85,7 @@
     ```
 
 8.  **运行开发服务器**
+    
     ```
     python manage.py runserver
     ```
@@ -108,5 +109,208 @@ ttsx/
 ├── .gitignore
 ├── manage.py
 └── requirements.txt      # 项目依赖
+```
+
+
+
+## 在centos7上用docker部署本项目
+
+**在项目根目录ttsx下准备文件dockerfile和docker-compose.yml**
+
+```python
+# dockerfile
+# 使用官方 Python 基础镜像
+FROM python:3.11-slim
+
+# 设置工作目录
+WORKDIR /app
+
+# 复制依赖文件并安装
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 复制项目代码
+COPY . .
+
+# 暴露 Django 默认端口
+EXPOSE 8000
+
+# 启动命令（可根据需要调整）
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+```
+
+```
+#在项目根目录下创建 docker-compose.yml 文件，定义两个服务：web（Django）和 db（MySQL）
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: ttsx-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: ttsxdb
+      MYSQL_USER: ttsxuser
+      MYSQL_PASSWORD: ttsxpass
+    ports:
+      - "3308:3306"   # 映射到主机3308，避免与现有MySQL冲突
+    volumes:
+      - ttsx-mysql-data:/var/lib/mysql   # 持久化数据
+    networks:
+      - ttsx-network
+
+  web:
+    build: .   # 使用当前目录的 Dockerfile 构建镜像
+    container_name: ttsx-web
+    restart: always
+    ports:
+      - "8001:8000"   # 映射到主机8001，避免与现有应用冲突
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=ttsxdb
+      - DB_USER=ttsxuser
+      - DB_PASSWORD=ttsxpass
+    depends_on:
+      - db   # 确保 db 先启动，但 Django 需要等待数据库完全就绪（可能需要额外脚本）
+    networks:
+      - ttsx-network
+    volumes:
+      - .:/app   # 挂载代码以便开发时热重载（生产环境不建议）
+
+networks:
+  ttsx-network:
+    driver: bridge
+
+volumes:
+  ttsx-mysql-data:
+
+```
+
+**调整数据库配置** 
+
+```
+# settings.py
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.environ.get('DB_NAME', 'ttsxdb'),
+        'USER': os.environ.get('DB_USER', 'ttsxuser'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'ttsxpass'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '3306'),
+        'OPTIONS': {
+        	'charset': 'utf8mb4',
+            'ssl': {'disabled': True} # 禁用 SSL
+        }
+    }
+}
+
+ALLOWED_HOSTS = ['*']  # 生产环境应指定域名或IP
+```
+
+#### 使用 Docker Compose 启动
+
+**进入正确的项目目录**
+
+```
+cd /root/ttsx
+```
+
+**在项目根目录执行**：
+
+```python
+docker-compose up -d 
+```
+
+- `-d` 表示后台运行。
+- 首次执行会构建 Django 镜像，并拉取 MySQL 镜像，然后启动容器。
+
+**查看运行状态**：
+
+```
+docker-compose ps或docker ps -a
+```
+
+应该看到两个服务状态均为 `**Up**`。
+
+------
+
+#### 执行数据库迁移和创建超级用户
+
+容器启动后，Django 数据库尚未创建表，需要执行迁移命令：
+
+```
+# 进入 web 容器执行迁移
+docker-compose exec web python manage.py migrate
+
+# 创建超级用户（可选）
+docker-compose exec web python manage.py createsuperuser
+```
+
+如果项目有静态文件，还需收集：
+
+```
+docker-compose exec web python manage.py collectstatic --noinput
+```
+
+#### 防火墙放行8001端口
+
+```
+sudo firewall-cmd --add-port=8001/tcp --permanent
+sudo firewall-cmd --reload # 重新加载防火墙配置
+sudo firewall-cmd --list-ports # sudo firewall-cmd --list-ports
+```
+
+#### 导入数据库文件
+
+**在项目根目录**ttsx下
+
+**将 SQL 文件复制到 MySQL 容器中**
+
+```
+docker cp categories.sql ttsx-mysql:/tmp/
+docker cp goodsinfo.sql ttsx-mysql:/tmp/
+```
+
+**进入 MySQL 容器执行导入**
+
+```
+docker-compose exec db bash
+```
+
+**然后在容器内执行**：
+
+```
+mysql -uroot -p ttsxdb < /tmp/categories.sql
+mysql -uroot -p ttsxdb < /tmp/goodsinfo.sql
+```
+
+输入密码 `rootpass`。
+
+**验证数据**
+
+在 MySQL 容器内（或通过 `docker-compose exec db mysql -uroot -p` 进入）执行：
+
+```sql
+USE ttsxdb;
+SELECT COUNT(*) FROM goods_goodsinfo;
+```
+
+#### 访问网站
+
+打开浏览器，访问 `http://ip地址:8001/index`
+
+**常用命令**
+
+```
+systemctl start docker 启动docker容器
+docker images 查看镜像
+docker ps -a 查看容器状态
+docker stop 容器
+docker restart 容器
+docker-compose logs web 查看 web 容器的日志
 ```
 

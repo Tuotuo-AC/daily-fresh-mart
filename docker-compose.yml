@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: ttsx-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: ttsxdb
+      MYSQL_USER: ttsxuser
+      MYSQL_PASSWORD: ttsxpass
+    ports:
+      - "3308:3306"   # 映射到主机3308，避免与现有MySQL冲突
+    volumes:
+      - ttsx-mysql-data:/var/lib/mysql   # 持久化数据
+    networks:
+      - ttsx-network
+
+  web:
+    build: .   # 使用当前目录的 Dockerfile 构建镜像
+    container_name: ttsx-web
+    restart: always
+    ports:
+      - "8001:8000"   # 映射到主机8001，避免与现有应用冲突
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=ttsxdb
+      - DB_USER=ttsxuser
+      - DB_PASSWORD=ttsxpass
+    depends_on:
+      - db   # 确保 db 先启动，但 Django 需要等待数据库完全就绪（可能需要额外脚本）
+    networks:
+      - ttsx-network
+    volumes:
+      - .:/app   # 挂载代码以便开发时热重载（生产环境不建议）
+
+networks:
+  ttsx-network:
+    driver: bridge
+
+volumes:
+  ttsx-mysql-data:
