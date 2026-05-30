@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('cart/',include('cart.urls')),# 包含购物车应用的URL配置
     path('',include('goods.urls')),# 包含其他应用的URL配置
+    path('user/',include('user.urls')),
 ]
