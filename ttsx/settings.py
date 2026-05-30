@@ -39,7 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'goods',
     'cart',
+    'user',
+    'django.contrib.sites'   # 用户发送邮件时生成激活链接
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -134,3 +137,20 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR,'static')]
+
+
+# 自定义的用户模型
+AUTH_USER_MODEL = 'user.User'
+
+
+# 邮件配置（以 QQ 邮箱为例，实际请换成自己的）
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.qq.com'          # 发送邮件的 SMTP 服务器
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your_qq@qq.com'  # 发件人邮箱
+EMAIL_HOST_PASSWORD = 'your_auth_code'  # 邮箱授权码，不是登录密码
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# 站点信息（用于生成激活链接的域名）
+SITE_ID = 1
