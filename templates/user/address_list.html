@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>地址管理</title>
+</head>
+<body>
+    <h2>我的收货地址</h2>
+    <a href="{% url 'user:address_add' %}">新增地址</a>
+    <ul>
+        {% for addr in addresses %}
+        <li>
+            {{ addr.receiver }} {{ addr.mobile }} {{ addr.get_full_address }}
+            {% if addr.is_default %}（默认）{% endif %}
+            <a href="{% url 'user:address_edit' addr.pk %}">编辑</a>
+            <a href="{% url 'user:address_delete' addr.pk %}" onclick="return confirm('确定删除？')">删除</a>
+            {% if not addr.is_default %}
+                <a href="{% url 'user:set_default' addr.pk %}">设为默认</a>
+            {% endif %}
+        </li>
+        {% empty %}
+        <li>暂无地址，请新增。</li>
+        {% endfor %}
+    </ul>
+    <p><a href="{% url 'user:profile' %}">返回个人中心</a></p>
+</body>
+</html>
