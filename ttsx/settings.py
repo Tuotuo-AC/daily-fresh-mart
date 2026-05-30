@@ -139,18 +139,20 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATICFILES_DIRS = [os.path.join(BASE_DIR,'static')]
 
 
-# 自定义的用户模型
-AUTH_USER_MODEL = 'user.User'
-
 
 # 邮件配置（以 QQ 邮箱为例，实际请换成自己的）
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'   # 暂时用控制台，不需要真实邮箱
 EMAIL_HOST = 'smtp.qq.com'          # 发送邮件的 SMTP 服务器
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'your_qq@qq.com'  # 发件人邮箱
-EMAIL_HOST_PASSWORD = 'your_auth_code'  # 邮箱授权码，不是登录密码
+EMAIL_HOST_USER = '你的qq@qq.com'  # 发件人邮箱
+EMAIL_HOST_PASSWORD = '你的授权码'  # 邮箱授权码，不是登录密码
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-# 站点信息（用于生成激活链接的域名）
+
+# 站点信息（用于生成激活链接）
+from django.contrib.sites.models import Site
+# 如果你没有 Site 对象，先运行 python manage.py createsuperuser 登录 admin 添加
+# 或者在 shell 中执行：
+# from django.contrib.sites.models import Site; Site.objects.create(id=1, domain='127.0.0.1:8000', name='localhost')
 SITE_ID = 1
