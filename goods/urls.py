@@ -3,7 +3,8 @@ from . import views  # 从当前应用导入视图
 
 urlpatterns = [
     # 主页
-    path('index/', views.index, name='index'),  # 这里定义index/路径的处理
+    # path('index/', views.index, name='index'),  # 这里定义index/路径的处理
+    path('', views.index, name='index'),  # 访问 / 时直接显示首页
     path('detail/', views.detail, name='detail'), # 详情页
     path('goods/', views.goods, name='goods'),
     path('testcsrf/', views.testcsrf, name='testcsrf'),
