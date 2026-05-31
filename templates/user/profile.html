@@ -2,20 +2,152 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>个人中心</title>
+    <title>个人中心 - 天天生鲜</title>
+    <link rel="stylesheet" href="/static/css/reset.css">
+    <style>
+        body {
+            background: #f5f5f5;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        .header {
+            background: #37ab40;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 16px;
+        }
+        .header a:hover {
+            color: #ff8800;
+        }
+        .container {
+            width: 800px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 4px;
+        }
+        .container h2 {
+            font-size: 20px;
+            color: #333;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 25px;
+        }
+        .form_group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .form_group label {
+            width: 100px;
+            text-align: right;
+            padding-right: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        .form_group input,
+        .form_group select {
+            flex: 1;
+            height: 36px;
+            padding: 0 10px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            outline: none;
+        }
+        .form_group input:focus,
+        .form_group select:focus {
+            border-color: #37ab40;
+        }
+        .form_group span {
+            margin-left: 10px;
+            color: #999;
+            font-size: 12px;
+        }
+        .submit_btn {
+            display: block;
+            width: 200px;
+            height: 40px;
+            background: #37ab40;
+            color: #fff;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 30px auto 0;
+        }
+        .submit_btn:hover {
+            background: #2d9232;
+        }
+        .success_msg {
+            text-align: center;
+            color: #37ab40;
+            margin-bottom: 15px;
+        }
+    </style>
 </head>
 <body>
-    <p>
-        <a href="/index/">首页</a> |
-        <a href="{% url 'user:profile' %}">个人中心</a> |
-        <a href="{% url 'user:address_list' %}">地址管理</a> |
-        <a href="{% url 'user:logout' %}">退出登录</a>
-    </p>
-    <h2>个人信息</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">保存修改</button>
-    </form>
+    <div class="header">
+        <div>
+            <a href="/">首页</a>
+        </div>
+        <div>
+            <a href="{% url 'user:profile' %}">个人中心</a>
+            <a href="{% url 'user:address_list' %}">地址管理</a>
+            <a href="{% url 'user:logout' %}">退出登录</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>个人信息</h2>
+
+        {% if success %}
+            <div class="success_msg">保存成功！</div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form_group">
+                <label>用户名</label>
+                <input type="text" value="{{ user.username }}" readonly style="background: #f5f5f5;">
+            </div>
+
+            <div class="form_group">
+                <label>昵称</label>
+                <input type="text" name="nickname" value="{{ form.nickname.value|default:user.profile.nickname }}">
+            </div>
+
+            <div class="form_group">
+                <label>手机号</label>
+                <input type="text" name="mobile" value="{{ form.mobile.value|default:user.profile.mobile }}" maxlength="11">
+            </div>
+
+            <div class="form_group">
+                <label>邮箱</label>
+                <input type="email" value="{{ user.email }}" readonly style="background: #f5f5f5;">
+            </div>
+
+            <div class="form_group">
+                <label>性别</label>
+                <select name="gender">
+                    <option value="保密" {% if form.gender.value == '保密' or not form.gender.value %}selected{% endif %}>保密</option>
+                    <option value="男" {% if form.gender.value == '男' %}selected{% endif %}>男</option>
+                    <option value="女" {% if form.gender.value == '女' %}selected{% endif %}>女</option>
+                </select>
+            </div>
+
+            <div class="form_group">
+                <label>生日</label>
+                <input type="date" name="birthday" value="{{ form.birthday.value|default:user.profile.birthday|date:'Y-m-d' }}">
+            </div>
+
+            <input type="submit" value="保存修改" class="submit_btn">
+        </form>
+    </div>
 </body>
 </html>

@@ -2,40 +2,166 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>地址管理</title>
+    <title>地址管理 - 天天生鲜</title>
+    <link rel="stylesheet" href="/static/css/reset.css">
+    <style>
+        body {
+            background: #f5f5f5;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        .header {
+            background: #37ab40;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 16px;
+        }
+        .header a:hover {
+            color: #ff8800;
+        }
+        .container {
+            width: 900px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 4px;
+        }
+        .container h2 {
+            font-size: 20px;
+            color: #333;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .add_btn {
+            display: inline-block;
+            padding: 8px 20px;
+            background: #37ab40;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .add_btn:hover {
+            background: #2d9232;
+        }
+        .address_list {
+            list-style: none;
+        }
+        .address_item {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .address_item:last-child {
+            border-bottom: none;
+        }
+        .address_info {
+            flex: 1;
+        }
+        .address_info .receiver {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-right: 15px;
+        }
+        .address_info .mobile {
+            font-size: 16px;
+            color: #333;
+        }
+        .address_info .address {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        .address_info .default_tag {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #ff8800;
+            color: #fff;
+            font-size: 12px;
+            border-radius: 2px;
+            margin-left: 10px;
+        }
+        .address_actions {
+            display: flex;
+            gap: 10px;
+        }
+        .address_actions a {
+            color: #37ab40;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .address_actions a:hover {
+            text-decoration: underline;
+        }
+        .address_actions .delete {
+            color: #f00;
+        }
+        .empty_msg {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
-    <p>
-        <a href="/index/">首页</a> |
-        <a href="{% url 'user:profile' %}">个人中心</a> |
-        <a href="{% url 'user:address_list' %}">地址管理</a> |
-        <a href="{% url 'user:logout' %}">退出登录</a>
-    </p>
-    <h2>我的收货地址</h2>
-    <p><a href="{% url 'user:address_add' %}">+ 新增地址</a></p>
-    {% if addresses %}
-    <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse;">
-        <tr>
-            <th>收货人</th><th>手机号</th><th>地址</th><th>默认</th><th>操作</th>
-        </tr>
-        {% for addr in addresses %}
-        <tr>
-            <td>{{ addr.receiver }}</td>
-            <td>{{ addr.mobile }}</td>
-            <td>{{ addr.get_full_address }}</td>
-            <td>{% if addr.is_default %}是{% else %}否{% endif %}</td>
-            <td>
-                <a href="{% url 'user:address_edit' addr.pk %}">编辑</a>
-                <a href="{% url 'user:address_delete' addr.pk %}" onclick="return confirm('确定删除？')">删除</a>
-                {% if not addr.is_default %}
+    <div class="header">
+        <div>
+            <a href="/">首页</a>
+        </div>
+        <div>
+            <a href="{% url 'user:profile' %}">个人中心</a>
+            <a href="{% url 'user:address_list' %}">地址管理</a>
+            <a href="{% url 'user:logout' %}">退出登录</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>
+            我的收货地址
+            <a href="{% url 'user:address_add' %}" class="add_btn">+ 新增地址</a>
+        </h2>
+
+        {% if addresses %}
+        <ul class="address_list">
+            {% for addr in addresses %}
+            <li class="address_item">
+                <div class="address_info">
+                    <span class="receiver">{{ addr.receiver }}</span>
+                    <span class="mobile">{{ addr.mobile }}</span>
+                    {% if addr.is_default %}
+                    <span class="default_tag">默认</span>
+                    {% endif %}
+                    <div class="address">{{ addr.get_full_address }}</div>
+                </div>
+                <div class="address_actions">
+                    <a href="{% url 'user:address_edit' addr.pk %}">编辑</a>
+                    <a href="{% url 'user:address_delete' addr.pk %}" class="delete" onclick="return confirm('确定删除？')">删除</a>
+                    {% if not addr.is_default %}
                     <a href="{% url 'user:set_default' addr.pk %}">设为默认</a>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-        <p>暂无地址，请新增。</p>
-    {% endif %}
+                    {% endif %}
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty_msg">
+            暂无收货地址，请点击上方"+ 新增地址"添加
+        </div>
+        {% endif %}
+    </div>
 </body>
 </html>

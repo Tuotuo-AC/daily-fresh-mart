@@ -33,6 +33,12 @@ class EmailVerifyRecord(models.Model):
 # 这里没有自定义 User，只有 Profile 和 Address。Profile 与 User 是一对一关系。
 # 额外创建 Profile 模型存储手机号、邮箱激活状态、昵称等信息。这样不会产生任何数据库冲突，原有商品数据完全不受影响
 class Profile(models.Model):
+    GENDER_CHOICES = [
+        ('保密', '保密'),
+        ('男', '男'),
+        ('女', '女'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     mobile = models.CharField(
         max_length=11,
@@ -44,6 +50,8 @@ class Profile(models.Model):
     )
     email_active = models.BooleanField(default=False, verbose_name='邮箱是否激活')
     nickname = models.CharField(max_length=30, blank=True, verbose_name='昵称')
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='保密', verbose_name='性别')
+    birthday = models.DateField(null=True, blank=True, verbose_name='生日')
 
     class Meta:
         db_table = 'user_profile'

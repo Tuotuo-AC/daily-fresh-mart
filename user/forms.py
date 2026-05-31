@@ -50,10 +50,12 @@ class LoginForm(forms.Form):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['nickname', 'mobile']
+        fields = ['nickname', 'mobile', 'gender', 'birthday']
         labels = {
             'nickname': '昵称',
             'mobile': '手机号',
+            'gender': '性别',
+            'birthday': '生日',
         }
 
 

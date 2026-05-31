@@ -16,22 +16,44 @@ from .forms import RegisterForm, LoginForm, ProfileForm, AddressForm
 from .models import Profile, Address, EmailVerifyRecord, generate_verification_code
 
 # ---------- 发送验证码视图 ----------
-def send_verify_code(request):
-    """发送邮箱验证码"""
-    email = request.GET.get('email', '').strip()
+def send_verify_code(request, email=None, send_type='register'):
+    """发送邮箱验证码（API视图）
+
+    Args:
+        request: HTTP请求对象
+        email: 直接传入的邮箱（可选）
+        send_type: 'register' 或 'forget'
+    """
+    if email is None:
+        email = request.GET.get('email', '').strip()
 
     if not email:
         return JsonResponse({'status': 'error', 'msg': '邮箱不能为空'})
 
-    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     import re
+    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     if not re.match(email_regex, email):
         return JsonResponse({'status': 'error', 'msg': '邮箱格式不正确'})
 
-    # 检查邮箱是否已注册
-    if User.objects.filter(email=email).exists():
-        return JsonResponse({'status': 'error', 'msg': '该邮箱已被注册'})
+    # 根据类型判断是否检查邮箱已注册
+    if send_type == 'register':
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({'status': 'error', 'msg': '该邮箱已被注册'})
+    elif send_type == 'forget':
+        if not User.objects.filter(email=email).exists():
+            return JsonResponse({'status': 'error', 'msg': '该邮箱未注册'})
 
+    # 生成并发送验证码
+    success, msg = _generate_and_send_code(email, send_type)
+
+    if success:
+        return JsonResponse({'status': 'success', 'msg': msg})
+    else:
+        return JsonResponse({'status': 'error', 'msg': msg})
+
+
+def _generate_and_send_code(email, send_type='register'):
+    """生成验证码并发送（内部函数）"""
     # 删除该邮箱之前的验证码
     EmailVerifyRecord.objects.filter(email=email).delete()
 
@@ -45,24 +67,28 @@ def send_verify_code(request):
         expire_time=timezone.now() + timedelta(minutes=10)
     )
 
-    # 发送邮件（打印到控制台）
-    subject = '天天生鲜 - 注册验证码'
-    message = f'您的注册验证码是：{code}\n请在10分钟内完成注册。\n\n如果这不是您的操作，请忽略此邮件。'
+    # 根据类型设置不同的邮件主题
+    if send_type == 'register':
+        subject = '天天生鲜 - 注册验证码'
+        message = f'您的注册验证码是：{code}\n请在10分钟内完成注册。\n\n如果这不是您的操作，请忽略此邮件。'
+    else:
+        subject = '天天生鲜 - 找回密码验证码'
+        message = f'您正在找回密码，验证码是：{code}\n请在10分钟内完成操作。\n\n如果这不是您的操作，请忽略此邮件。'
+
     try:
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
         print(f"\n{'='*50}")
         print(f"📧 邮件已发送到: {email}")
         print(f"🔑 验证码是: {code}")
         print(f"{'='*50}\n")
-        return JsonResponse({'status': 'success', 'msg': f'验证码已发送到邮箱'})
+        return True, '验证码已发送到邮箱'
     except Exception as e:
-        # 即使邮件发送失败，也打印验证码到控制台
         print(f"\n{'='*50}")
         print(f"📧 邮件发送失败，但验证码仍可用: {email}")
         print(f"🔑 验证码是: {code}")
         print(f"❌ 错误: {e}")
         print(f"{'='*50}\n")
-        return JsonResponse({'status': 'success', 'msg': f'验证码已生成（邮件发送失败，请查看控制台）'})
+        return True, '验证码已生成（邮件发送失败，请查看控制台）'
 
 
 # ---------- 注册视图 ----------
@@ -115,7 +141,7 @@ def register(request):
             # 删除已使用的验证码
             verify_record.delete()
 
-            return render(request, 'user/register_done.html', {'email': user.email})
+            return render(request, 'user/register_success.html', {'email': user.email})
     else:
         form = RegisterForm()
     return render(request, 'user/register.html', {'form': form})
@@ -175,6 +201,64 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return redirect('index')   # 返回首页，请确保有 'index' 路由
+
+# ---------- 忘记密码 ----------
+def forget_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        if not email:
+            return render(request, 'user/forget_password.html', {'error': '请输入邮箱'})
+
+        try:
+            user = Profile.objects.get(user__email=email)
+        except Profile.DoesNotExist:
+            return render(request, 'user/forget_password.html', {'error': '该邮箱未注册'})
+
+        _generate_and_send_code(email, send_type='forget')
+        return render(request, 'user/forget_password.html', {'success': True, 'email': email})
+
+    return render(request, 'user/forget_password.html')
+
+# ---------- 重置密码 ----------
+def reset_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        verify_code = request.POST.get('verify_code', '').strip()
+        password = request.POST.get('password', '').strip()
+        password_confirm = request.POST.get('password_confirm', '').strip()
+
+        if not all([email, verify_code, password, password_confirm]):
+            return render(request, 'user/reset_password.html', {'error': '请填写所有字段', 'email': email})
+
+        if password != password_confirm:
+            return render(request, 'user/reset_password.html', {'error': '两次密码输入不一致', 'email': email})
+
+        if len(password) < 6:
+            return render(request, 'user/reset_password.html', {'error': '密码长度不能少于6位', 'email': email})
+
+        try:
+            verify_record = EmailVerifyRecord.objects.filter(
+                email=email,
+                code=verify_code,
+                expire_time__gt=timezone.now()
+            ).order_by('-created_time').first()
+
+            if not verify_record:
+                return render(request, 'user/reset_password.html', {'error': '验证码已过期，请重新获取', 'email': email})
+
+            user = User.objects.get(email=email)
+            user.set_password(password)
+            user.save()
+
+            verify_record.delete()
+
+            return render(request, 'user/reset_password_success.html')
+
+        except User.DoesNotExist:
+            return render(request, 'user/reset_password.html', {'error': '用户不存在', 'email': email})
+
+    email = request.GET.get('email', '')
+    return render(request, 'user/reset_password.html', {'email': email})
 
 # ---------- 个人中心 ----------
 @login_required
