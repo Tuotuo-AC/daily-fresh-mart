@@ -128,6 +128,9 @@ ttsx/
 ├── docker-compose.yml            # Docker Compose 配置
 └── entrypoint.sh                 # 容器启动脚本
 ```
+
+## 在centos7上用docker部署本项目（适用于未添加用户模块相关功能前的版本）
+
 **在项目根目录ttsx下准备文件dockerfile和docker-compose.yml**
 
 ```python
