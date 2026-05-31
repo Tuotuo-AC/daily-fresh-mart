@@ -106,47 +106,26 @@
     现在，在浏览器中访问 `http://127.0.0.1:8000` 即可看到网站前台。
 
 ## 📁 项目结构
-
 ttsx/
-
 ├── cart/                      # 购物车模块
-
 ├── goods/                     # 商品模块
-
 ├── user/                      # 用户模块
-
 ├── ttsx/                      # 项目主配置
-
 │   ├── settings.py            # 配置文件
-
 │   └── urls.py                # 主路由
-
 ├── templates/                 # 模板文件
-
 │   ├── user/                  # 用户相关模板
-
 │   ├── cart.html              # 购物车页面
-
 │   ├── detail.html            # 商品详情页
-
 │   ├── goods.html             # 商品列表页
-
 │   ├── index.html             # 首页
-
 │   └── place_order.html       # 订单确认页
-
 ├── static/                    # 静态文件
-
 ├── manage.py                  # Django 管理脚本
-
 ├── requirements.txt           # Python 依赖
-
 ├── dockerfile                 # Docker 构建文件
-
 ├── docker-compose.yml         # Docker Compose 配置
-
-└── entrypoint.sh              # 容器启动脚本用docker部署本项目（适用于未添加用户模块相关功能前的版本）
-
+└── entrypoint.sh              # 容器启动脚本
 
 
 **在项目根目录ttsx下准备文件dockerfile和docker-compose.yml**
