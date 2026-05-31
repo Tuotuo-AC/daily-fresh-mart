@@ -9,45 +9,82 @@
 	<script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="/static/js/slide.js"></script>
     <style>
-        /* 让 nav 浮动，与 logo 和购物车在同一行 */
-        .search_bar nav {
-            float: left;
-            margin-left: 30px;      /* 与 logo 拉开距离 */
-            line-height: 42px;      /* 与 logo 高度对齐，根据实际调整 */
+        .search_bar {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
         }
-        /* 调整链接和欢迎文本的样式，去除过大 padding 导致的高度异常 */
-        .nav-links a, .nav-links span {
-            margin: 0 8px;          /* 左右间距 */
-            padding: 0;             /* 去掉内边距，避免撑高 */
+        .logo {
+            margin: 0;
+        }
+        .user_area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .user_area a, .user_area span {
+            color: #666;
             text-decoration: none;
             font-size: 14px;
         }
-        /* 可选：购物车数字徽章位置微调 */
+        .user_area a:hover {
+            color: #37ab40;
+        }
+        .user_welcome {
+            color: #ff8800;
+            font-weight: bold;
+        }
+        .guest_cart {
+            width: 200px;
+            height: 40px;
+            position: static;
+            display: flex;
+            align-items: center;
+        }
+        .guest_cart .cart_name {
+            width: 158px;
+            height: 38px;
+            line-height: 38px;
+            border: 1px solid #dddddd;
+            background: url(/static/images/icons.png) 13px -300px no-repeat #fff;
+            font-size: 14px;
+            color: #37ab40;
+            text-indent: 56px;
+            display: block;
+        }
         .guest_cart .goods_count {
-            line-height: 42px;
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            line-height: 40px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #ff8800;
         }
     </style>
 </head>
 <body>
 	<div class="search_bar clearfix">
-		<a href="/index/" class="logo fl"><img src="/static/images/logo.png"></a>
-		<nav class="fl">   <!-- 添加 fl 类使其左浮动 -->
-            <div class="nav-links">
-                {% if user.is_authenticated %}
-                    <!-- 已登录状态显示 -->
-                    <span>欢迎，{{ user.username }}</span>
-                    <a href="{% url 'user:profile' %}">个人中心</a>
-                    <a href="{% url 'user:logout' %}">登出</a>
-                {% else %}
-                    <!-- 未登录状态显示 -->
-                    <a href="{% url 'user:login' %}">登录</a>
-                    <a href="{% url 'user:register' %}">注册</a>
-                {% endif %}
-            </div>
-        </nav>
-        <div class="guest_cart fr">
-			<a href="/cart/show_cart/" class="cart_name fl">我的购物车</a>
-			<div class="goods_count fl">{{ cart_goods_count }}</div>
+		<a href="/" class="logo fl"><img src="/static/images/logo.png"></a>
+
+		<div class="user_area">
+			{% if user.is_authenticated %}
+				<span class="user_welcome">欢迎，{{ user.username }}</span>
+				<a href="{% url 'user:profile' %}">个人中心</a>
+				<a href="{% url 'user:logout' %}">退出</a>
+			{% else %}
+				<a href="{% url 'user:login' %}">登录</a>
+				<span>|</span>
+				<a href="{% url 'user:register' %}">注册</a>
+			{% endif %}
+		</div>
+
+		<div class="guest_cart">
+			<a href="/cart/show_cart/" class="cart_name">我的购物车</a>
+			<div class="goods_count">{{ cart_goods_count }}</div>
 			<ul class="cart_goods_show">
                 {% for cart_goods in cart_goods_list %}
 				<li>
