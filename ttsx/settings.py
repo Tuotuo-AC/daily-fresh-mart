@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5$$qikl@^l1(i)uz2p$&f5i9x+54u!s#fp@bme4(yp@%6q#$72'
+SECRET_KEY = 'django-insecure-5$$qikl@^l1(i)uz2p$&f5i9x+54u!s#fp@bme4(yp@%6q#$72' # 已生成新的
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -90,7 +90,7 @@ DATABASES = {
         # 用户名
         "USER":"root",
         # 密码
-        "PASSWORD":"ttt121",
+        "PASSWORD":"123456",
     }
 }
 
