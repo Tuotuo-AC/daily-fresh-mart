@@ -106,6 +106,7 @@
     现在，在浏览器中访问 `http://127.0.0.1:8000` 即可看到网站前台。
 
 ## 📁 项目结构
+```text
 ttsx/
 ├── cart/                         # 购物车模块
 ├── goods/                        # 商品模块
@@ -126,7 +127,7 @@ ttsx/
 ├── dockerfile                    # Docker 构建文件
 ├── docker-compose.yml            # Docker Compose 配置
 └── entrypoint.sh                 # 容器启动脚本
-
+```
 **在项目根目录ttsx下准备文件dockerfile和docker-compose.yml**
 
 ```python
