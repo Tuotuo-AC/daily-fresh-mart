@@ -13,6 +13,7 @@ class RegisterForm(forms.Form):
     )
     password = forms.CharField(widget=forms.PasswordInput, label='密码')
     password_confirm = forms.CharField(widget=forms.PasswordInput, label='确认密码')
+    verify_code = forms.CharField(max_length=6, label='验证码', required=False)
 
     def clean_username(self):
         username = self.cleaned_data['username']

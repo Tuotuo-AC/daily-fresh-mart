@@ -1,11 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <title>{{ title }}</title>
 </head>
 <body>
+    <p>
+        <a href="/index/">首页</a> |
+        <a href="{% url 'user:profile' %}">个人中心</a> |
+        <a href="{% url 'user:address_list' %}">地址管理</a> |
+        <a href="{% url 'user:logout' %}">退出登录</a>
+    </p>
     <h2>{{ title }}</h2>
+    {% if form.errors %}
+    <ul style="color: red;">
+        {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+    </ul>
+    {% endif %}
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}

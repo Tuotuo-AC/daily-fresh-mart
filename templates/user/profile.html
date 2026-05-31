@@ -1,17 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <title>个人中心</title>
 </head>
 <body>
+    <p>
+        <a href="/index/">首页</a> |
+        <a href="{% url 'user:profile' %}">个人中心</a> |
+        <a href="{% url 'user:address_list' %}">地址管理</a> |
+        <a href="{% url 'user:logout' %}">退出登录</a>
+    </p>
     <h2>个人信息</h2>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">保存修改</button>
     </form>
-    <p><a href="{% url 'user:address_list' %}">地址管理</a></p>
-    <p><a href="{% url 'user:logout' %}">退出登录</a></p>
 </body>
 </html>

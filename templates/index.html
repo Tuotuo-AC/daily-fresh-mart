@@ -8,16 +8,47 @@
 	<script type="text/javascript" src="/static/js/jquery-1.12.4.min.js"></script>
 	<script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="/static/js/slide.js"></script>
+    <style>
+        /* 让 nav 浮动，与 logo 和购物车在同一行 */
+        .search_bar nav {
+            float: left;
+            margin-left: 30px;      /* 与 logo 拉开距离 */
+            line-height: 42px;      /* 与 logo 高度对齐，根据实际调整 */
+        }
+        /* 调整链接和欢迎文本的样式，去除过大 padding 导致的高度异常 */
+        .nav-links a, .nav-links span {
+            margin: 0 8px;          /* 左右间距 */
+            padding: 0;             /* 去掉内边距，避免撑高 */
+            text-decoration: none;
+            font-size: 14px;
+        }
+        /* 可选：购物车数字徽章位置微调 */
+        .guest_cart .goods_count {
+            line-height: 42px;
+        }
+    </style>
 </head>
 <body>
 	<div class="search_bar clearfix">
 		<a href="/index/" class="logo fl"><img src="/static/images/logo.png"></a>
-		<div class="guest_cart fr">
+		<nav class="fl">   <!-- 添加 fl 类使其左浮动 -->
+            <div class="nav-links">
+                {% if user.is_authenticated %}
+                    <!-- 已登录状态显示 -->
+                    <span>欢迎，{{ user.username }}</span>
+                    <a href="{% url 'user:profile' %}">个人中心</a>
+                    <a href="{% url 'user:logout' %}">登出</a>
+                {% else %}
+                    <!-- 未登录状态显示 -->
+                    <a href="{% url 'user:login' %}">登录</a>
+                    <a href="{% url 'user:register' %}">注册</a>
+                {% endif %}
+            </div>
+        </nav>
+        <div class="guest_cart fr">
 			<a href="/cart/show_cart/" class="cart_name fl">我的购物车</a>
 			<div class="goods_count fl">{{ cart_goods_count }}</div>
 			<ul class="cart_goods_show">
-
-
                 {% for cart_goods in cart_goods_list %}
 				<li>
 					<img src="/static/goods/{{ cart_goods.goods_img }}.jpg" alt="商品图片">
@@ -25,9 +56,7 @@
 					<div>{{ cart_goods.goods_num }}</div>
 				</li>
                 {% endfor %}
-
 			</ul>
-
 		</div>
 	</div>
 

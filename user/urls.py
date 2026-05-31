@@ -4,6 +4,7 @@ from . import views
 app_name = 'user'   # 命名空间
 
 urlpatterns = [
+    path('send_verify_code/', views.send_verify_code, name='send_verify_code'),
     path('register/', views.register, name='register'),
     path('activate/<uidb64>/<token>/', views.activate, name='activate'),
     path('login/', views.user_login, name='login'),
